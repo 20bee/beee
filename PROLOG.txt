@@ -1,0 +1,253 @@
+female(mona).
+female(monisa).
+male(harry).
+male(peter).
+parent(george,elizabeth).
+parent(mona,elizabeth).
+married(george,mona).
+married(smith,monisa).
+
+grandchild(X,Y):-
+    parent(Y,Z),
+    parent(Z,X).
+
+great_grandparent(X,Y):-
+   parent(X,Z),
+   parent(Z,W),
+   parent(W,Y).
+
+brother(X,Y):-
+    parent(P1,X),
+    parent(P1,Y),
+    parent(P2,X),
+    parent(P2,Y),
+    male(X),
+    X \== Y.
+
+daughter(X,Y):-
+    parent(Y,X),
+    female(X).
+
+aunt(X, Y) :-
+    sister(X, Z),
+    parent(Z, Y).
+
+brother_in_law(X, Y) :-
+    (brother(X, Z), married(Z, Y));
+    (married(X, Z), sister(Z, Y)).
+
+first_cousin(X, Y) :-
+    parent(A, X),
+    parent(B, Y),
+    (brother(A, B); sister(A, B)).
+
+sister(X,Y):-parent(A,B,X), parent(A,B,Y),female(X), X \==Y.
+siblings(X,Y):- parent(A,B,X),parent(A,B,Y),X \== Y.
+husband(X,Y):- wife(Y,X).
+son(X,Y):- father(Y,X); mother(Y,X).male(X).
+grandfather(X,Y):-father(X,Z),father(Z,Y).
+grandmother(X,Y):-mother(X,Z),father(Z,Y).
+uncle(X,Y):-brother(Z,X),father(Z,Y).
+aunt(X,Y):-husband(Z,X),uncle(Z,Y).
+cousin(X,Y):-uncle(Z,X),father(Z,Y).
+
+
+***** LIST ******
+
+countryList([srilanka,turkey,india,singapore,maldives,pakistan]).
+
+print:-
+    countryList(Country),
+    write(Country).
+
+sort:-
+    countryList(Country),
+    sort(Country, Sorted),
+    write(Sorted).
+
+iscountry(X):-
+    countryList(Country),
+    (
+    member(X,Country) ->
+        write('is a country');
+        write('is not a country')
+    ).
+
+add(X):-
+    countryList(Country),
+    X = [japan | Country],
+    write(X).
+
+count(X,Y):-
+    length(X,Y),
+    write(Y).
+
+
+****** WATER JUG*****
+
+water_jug(X,Y):-
+    X > 4, Y < 3,
+    write('4L Jug iS Overflowing....').
+
+water_jug(X,Y):-
+    X < 4, Y > 3,
+    write('3L Jug is Overflowing....').
+water_jug(X,Y):-
+    X > 4, Y > 3,
+    write('Both water jugs are Over flowing....').
+
+water_jug(X, Y):-
+    (
+      X=:=0,Y=:=0, nl,
+      write('4L:4 & 3L:0 (Action: Fill 4L Jug.)'),
+      XX is 4,
+      water_jug(XX,Y)
+    );
+    (
+      X=:=0,Y=:=0, nl,
+      write('4L:0 & 3L:3 (Action: Fill 3L Jug.)'),
+      YY is 3,
+      water_jug(X,YY)
+    );
+    (
+        X=:=0, Y=:=3, nl,
+        write('4L:0 & 3L:3 (Action: Pour water From 3L tO 4l.)'),
+        XX is Y, YY is Y-Y,
+        water_jug(XX,YY)
+
+    );
+    (
+        X=:=3, Y=:=0,nl,
+        write('4L:3 & 3L:0 (Action: Fill 3L Jug with water)'),
+        YY is 3,
+        water_jug(X,YY)
+    );
+    (
+        X=:=3, Y=:=3,nl,
+        write('4L:3 & 3L:3 (Action: Pour water from 3L -> 4L, Untill 4L Fill)'),
+        XX is X + (4-Y), YY is Y-1,
+        water_jug(XX,YY)
+    );
+    (
+       X=:=4, Y=:=2,nl,
+       write('4L:4 & 3L:2 (Action: Empty 4L.)'),
+       XX is 0,
+       water_jug(XX,Y)
+    );
+    (
+      X=:=0, Y=:=2,nl,
+      write('4L:0 & 3L:2 (Action: Pour 3L water into 4L)'),
+      XX is Y, YY is 0,
+      water_jug(XX, YY)
+    );
+
+    (
+      X=:=2, Y=:=0,nl,
+      write('4L:2 & 3L:0 (Action: Goal Reached)')
+    ).
+
+***** MISSIONARY****
+
+other_bank(e,w).
+other_bank(w,e).
+
+move([X,X,G,C], wolf,[Y,Y,G,C]):-other_bank(X,Y).
+move([X,W,X,C], goat,[Y,W,Y,C]):-other_bank(X,Y).
+move([X,W,G,X], cabbage,[Y,W,G,Y]):-other_bank(X,Y).
+move([X,W,G,C], farmer,[Y,W,G,C]):-other_bank(X,Y).
+
+safety_ck(X,X,_).
+safety_ck(X,_,X).
+
+safe_status([M, W, G, C]):-
+    safety_ck(M,G,W),
+    safety_ck(M,G,C).
+
+solution([e,e,e,e],[]).
+solution(Config, [Move | OtherMoves] ):-
+          move(Config, Move, NextConfig),
+          safe_status(NextConfig),
+          solution(NextConfig, OtherMoves).
+
+
+******
+initial_state(state(3, 3, 0, 0, left)).
+goal_state(state(0, 0, 3, 3, right)).
+
+valid(state(ML, CL, MR, CR, _)) :-
+    ML >= 0, CL >= 0, MR >= 0, CR >= 0,
+    (ML = 0; ML >= CL),   
+    (MR = 0; MR >= CR).   
+
+move(state(ML, CL, MR, CR, left), state(ML2, CL2, MR2, CR2, right)) :-
+        ML2 is ML - 2, MR2 is MR + 2, CL2 is CL, CR2 is CR;
+        ML2 is ML, MR2 is MR, CL2 is CL - 2, CR2 is CR + 2;
+        ML2 is ML - 1, MR2 is MR + 1, CL2 is CL - 1, CR2 is CR + 1;
+        ML2 is ML - 1, MR2 is MR + 1, CL2 is CL, CR2 is CR;
+        ML2 is ML, MR2 is MR, CL2 is CL - 1, CR2 is CR + 1.
+
+move(state(ML, CL, MR, CR, right), state(ML2, CL2, MR2, CR2, left)) :-
+        ML2 is ML + 2, MR2 is MR - 2, CL2 is CL, CR2 is CR;
+        ML2 is ML, MR2 is MR, CL2 is CL + 2, CR2 is CR - 2;
+        ML2 is ML + 1, MR2 is MR - 1, CL2 is CL + 1, CR2 is CR - 1;
+        ML2 is ML + 1, MR2 is MR - 1, CL2 is CL, CR2 is CR;
+        ML2 is ML, MR2 is MR, CL2 is CL + 1, CR2 is CR - 1.
+
+transition(State, NextState) :-
+    move(State, NextState),
+    valid(NextState).
+solve :-
+    initial_state(State),
+    goal_state(Goal),
+    path(State, Goal, [State], Path),
+    print_path(Path).
+path(Goal, Goal, Path, Path).
+path(State, Goal, Visited, Path) :-
+    transition(State, NextState),
+    \+ member(NextState, Visited),
+    path(NextState, Goal, [NextState|Visited], Path).
+
+print_path([]).
+print_path([State|Rest]) :-
+    write(State), nl,
+    print_path(Rest).
+
+
+
+
+
+is_employee(Name) :- employee(_, Name, _, _, _, _, _).
+
+count_employees(Count) :-
+    findall(X, employee(X, _, _, _, _, _, _), Employees),
+    length(Employees, Count).
+
+list_employees :-
+    employee(_, Name, _, _, _, _, _),
+    write(Name), nl, fail.
+
+list_employees.
+
+average_salary(Average) :-
+    findall(Salary, employee(_, _, _, _, Salary, _, _), Salaries),
+    sum_list(Salaries, Total),
+    length(Salaries, Count),
+    Average is Total / Count.
+
+promotion(Name) :-
+    employee(_, Name, _, _, Salary, _, _),
+    Salary >= 80000,
+    write(Name),
+    write(' gets the promotion'), nl, fail.
+promotion(_) :- write('Can\'t get the promotion'), nl.
+
+
+calculate_bmi(Name, BMI) :-
+    employee(_, Name, _, _, _, Weight, HeightCm),
+    HeightM is HeightCm / 100,
+    BMI is Weight / (HeightM * HeightM),
+    write(Name), write(' has a BMI of '), write(BMI), nl.
+
+bmi_all_employees :- employee(_, Name, _, _, _, _, _), calculate_bmi(Name, _), fail.bmi_all_employees.
+bmi_all_employees.
+
